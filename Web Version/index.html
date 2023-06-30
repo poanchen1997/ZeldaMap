@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>
+        The Legend of Zelda -- Tears of the King interactive map
+    </title>
+    <!-- leaflet style -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+    <!-- leaflet style js-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    <!-- leaflet object css-->
+    <link rel="stylesheet" href="CSS/style.css">
+    <!-- leaflet panel css-->
+    <link href="CSS/leaflet-panel-layers.css" rel="stylesheet">
+    <!-- leaflet panel js-->
+    <script src="JS/leaflet-panel-layers.js"></script>
+    <!-- JQuery js-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+    <!-- data js-->
+    <script type="text/javascript" src="Data/Locations.js" id="l_name"></script>
+    <script type="text/javascript" src="Data/Items_sky.js"></script>
+    <script type="text/javascript" src="Data/Items_ground.js"></script>
+    <script type="text/javascript" src="Data/Items_under.js"></script>
+</head>
+
+<body>
+    <main>
+        <div id="map"></div>
+        <div id="myAccountpanel" class="sidepanel" style="height: 380px;">
+            <a href="javascript:void(0)" class="closebtn" onclick="closeNav('myAccountpanel')">&times;</a>
+            <div class="login_page">
+                <div id="container1">
+
+                    <div class="login">
+
+                        <h3>Login</h3>
+
+                        <form action="user_management.php">
+                            <input type="text" id="username" name="username" placeholder="Account" required>
+                            <div class="tab"></div>
+                            <input type="text" id="password" name="password" placeholder="Password" required>
+                            <div class="tab"></div>
+                            <!-- <input type="submit" value="Login" class="submit" onclick="logIn()"> -->
+                            <div class="submit" style="text-align: center; padding-top: 11px !important;"
+                                onclick="logIn()"> login </div>
+                        </form>
+
+                        <h5 onclick="show_hide()">Register</h5>
+
+                    </div><!-- login end-->
+                </div><!-- container1 end-->
+            </div><!-- login_page end-->
+
+            <div class="signup_page">
+                <div id="container2" style="display: none;">
+                    <div class="signup">
+
+                        <h3>Sign Up</h3>
+
+                        <form action="user_management.php">
+                            <input type="text" id="fullname" name="fullname" placeholder="Username" required>
+                            <div class="tab"></div>
+                            <input type="text" id="username2" name="username" placeholder="Account" required>
+                            <div class="tab"></div>
+                            <input type="text" id="password2" name="password" placeholder="Password" required>
+                            <div class="tab"></div>
+                            <input type="text" id="comfirm_password" name="comfirm_password"
+                                placeholder="Repeat Password" required>
+                            <div class="tab"></div>
+                            <!-- <input type="submit" value="Register" class="submit"> -->
+                            <div class="submit" style="text-align: center; padding-top: 11px !important;"
+                                onclick="signIn()"> Register </div>
+                        </form>
+
+                        <h5 onclick="show_hide()">Already have account, <br /> Click here to login</h5>
+
+                    </div><!-- signup end-->
+                </div><!-- container2 end-->
+            </div><!-- signup_page end-->
+
+            <div class="user_page">
+                <div id="container3" style="display: none;">
+                    <h3> Username: </h3>
+                    <div class="tab"></div>
+                    <h2 style="text-align: center; color: white"> <span id="user"></span> </h2>
+                    <div class="tab"></div>
+                    <div class="submit" style="text-align: center; padding-top: 11px !important;" onclick="logOut()">
+                        Logout </div>
+                </div>
+            </div>
+        </div>
+        <!-- control panel div(maps)-->
+        <div id="myMappanel" class="sidepanel height-60">
+            <a href="javascript:void(0)" class="closebtn" onclick="closeNav('myMappanel')">&times;</a> <!-- "x" icon -->
+            <!-- three map icon -->
+            <a href="#" class="iconImage">
+                <div class="image-container">
+                    <img class="rounded-corners  hovering-effect" src="Images/Icon_map_S.png" alt="Sky_Map" height="170"
+                        width="170" onclick="changeMap(image_S)">
+                    <div class="showup-font" onclick="changeMap(image_S)">&nbsp;&nbsp;Sky</div>
+                </div>
+            </a>
+            <a href="#" class="iconImage">
+                <div class="image-container">
+                    <img class="rounded-corners  hovering-effect" src="Images/Icon_map_G.png" alt="Ground_Map"
+                        height="170" width="170" onclick="changeMap(image_G)">
+                    <div class="showup-font" onclick="changeMap(image_G)">Ground</div>
+                </div>
+            </a>
+            <a href="#" class="iconImage">
+                <div class="image-container">
+                    <img class="rounded-corners hovering-effect" src="Images/Icon_map_U.png" alt="Under_Map"
+                        height="170" width="170" onclick="changeMap(image_U)">
+                    <div class="showup-font" onclick="changeMap(image_U)">Under</div>
+                </div>
+            </a>
+        </div>
+        <!-- control panel div(items)-->
+        <div id="mySidepanel" class="sidepanel height-60">
+            <a href="javascript:void(0)" class="closebtn" onclick="closeNav('mySidepanel')">&times;</a>
+            <!-- show button test -->
+            <a id="showbtn" href="#" class="infoWindowIcn category-button toggledOn" onclick="closeMarker()">
+                <p class="label">
+                    <span class="completed-label-hide">
+                        Hide Completed
+                    </span>
+                    <span class="completed-label-show">
+                        Show Completed
+                    </span>
+                </p>
+            </a>
+            <!-- category icon below -->
+            <form action="/action_page.php">
+                <h4 style="text-align: center; color: #e7dfa8;"> Transport Gate </h4>
+                <input type="checkbox" class="group-list" id="c1" value="Skyview Tower"
+                    onclick="openSingleMarker('c1', 'Skyview Tower')">
+                <label for="c1" style="color:white;"> Skyview Tower </label>
+                <br>
+                <input type="checkbox" class="group-list" id="c2" value="Shrine of Light"
+                    onclick="openSingleMarker('c2', 'Shrine of Light')">
+                <label for="c2" style="color:white;"> Shrine </label>
+                <br>
+                <input type="checkbox" class="group-list" id="c3" value="Lightroot"
+                    onclick="openSingleMarker('c3', 'Lightroot')">
+                <label for="c3" style="color:white;"> Lightroot </label>
+                <br>
+                <input type="checkbox" class="group-list" id="c4" value="Dungeon"
+                    onclick="openSingleMarker('c4', 'Dungeon')">
+                <label for="c4" style="color:white;"> Dungeon </label>
+                <br>
+                <input type="checkbox" class="group-list" id="c5" value="Tech Lab"
+                    onclick="openSingleMarker('c5', 'Tech Lab')">
+                <label for="c5" style="color:white;"> Tech Lab </label>
+                <br>
+                <input type="checkbox" class="group-list" id="c6" value="Other Travel Gates"
+                    onclick="openSingleMarker('c6', 'Other Travel Gates')">
+                <label for="c6" style="color:white;"> Other Travel Gates </label>
+                <br>
+
+                <h4 style="text-align: center; color: #e7dfa8;"> Collections </h4>
+                <input type="checkbox" class="group-list" id="c7" value="Korok Seed"
+                    onclick="openSingleMarker('c7', 'Korok Seed')">
+                <label for="c7" style="color:white;"> Korok Seeds </label>
+                <br>
+                <input type="checkbox" class="group-list" id="c8" value="Sages Will"
+                    onclick="openSingleMarker('c8', 'Sages Will')">
+                <label for="c8" style="color:white;"> Sage's Will </label>
+                <br>
+                <input type="checkbox" class="group-list" id="c9" value="Old Map"
+                    onclick="openSingleMarker('c9', 'Old Map')">
+                <label for="c9" style="color:white;"> Old Map </label>
+                <br>
+                <input type="checkbox" class="group-list" id="c10" value="Yiga Schematic"
+                    onclick="openSingleMarker('c10', 'Yiga Schematic')">
+                <label for="c10" style="color:white;"> Yiga Schematic </label>
+                <br>
+                <input type="checkbox" class="group-list" id="c11" value="Zonai Relief"
+                    onclick="openSingleMarker('c11', 'Zonai Relief')">
+                <label for="c11" style="color:white;"> Zonai Relief </label>
+                <br>
+                <input type="checkbox" class="group-list" id="c12" value="Dragons Tear"
+                    onclick="openSingleMarker('c12', 'Dragons Tear')">
+                <label for="c12" style="color:white;"> Dragon's Tear </label>
+                <br>
+
+                <h4 style="text-align: center; color: #e7dfa8;"> Locations </h4>
+                <input type="checkbox" class="group-list" id="c13" value="Village"
+                    onclick="openSingleMarker('c13', 'Village')">
+                <label for="c13" style="color:white;"> Village </label>
+                <br>
+                <input type="checkbox" class="group-list" id="c14" value="Chasm"
+                    onclick="openSingleMarker('c14', 'Chasm')">
+                <label for="c14" style="color:white;"> Chasm </label>
+                <br>
+                <input type="checkbox" class="group-list" id="c15" value="Cave"
+                    onclick="openSingleMarker('c15', 'Cave')">
+                <label for="c15" style="color:white;"> Caves </label>
+                <br>
+                <input type="checkbox" class="group-list" id="c16" value="Well"
+                    onclick="openSingleMarker('c16', 'Well')">
+                <label for="c16" style="color:white;"> Well </label>
+                <br>
+
+                <h4 style="text-align: center; color: #e7dfa8;"> Services </h4>
+                <input type="checkbox" class="group-list" id="c17" value="Stable"
+                    onclick="openSingleMarker('c17', 'Stable')">
+                <label for="c17" style="color:white;"> Stable </label>
+                <br><input type="checkbox" class="group-list" id="c18" value="Inn"
+                    onclick="openSingleMarker('c18', 'Inn')">
+                <label for="c18" style="color:white;"> Inn </label>
+                <br>
+                <input type="checkbox" class="group-list" id="c19" value="General Store"
+                    onclick="openSingleMarker('c19', 'General Store')">
+                <label for="c19" style="color:white;"> General Store </label>
+                <br>
+                <input type="checkbox" class="group-list" id="c20" value="Armor Shop"
+                    onclick="openSingleMarker('c20', 'Armor Shop')">
+                <label for="c20" style="color:white;"> Armor Shop </label>
+                <br>
+                <input type="checkbox" class="group-list" id="c21" value="Other Shops"
+                    onclick="openSingleMarker('c21', 'Other Shops')">
+                <label for="c21" style="color:white;"> Other Shops </label>
+                <br>
+                <input type="checkbox" class="group-list" id="c22" value="Koltin"
+                    onclick="openSingleMarker('c22', 'Koltin')">
+                <label for="c22" style="color:white;"> Koltin </label>
+                <br>
+                <input type="checkbox" class="group-list" id="c23" value="Bargainer Statue"
+                    onclick="openSingleMarker('c23', 'Bargainer Statue')">
+                <label for="c23" style="color:white;"> Bargainer Statue </label>
+                <br>
+                <input type="checkbox" class="group-list" id="c24" value="Fairy Fountain"
+                    onclick="openSingleMarker('c24', 'Fairy Fountain')">
+                <label for="c24" style="color:white;"> Fairy Fountain </label>
+                <br>
+                <input type="checkbox" class="group-list" id="c25" value="Device Dispenser"
+                    onclick="openSingleMarker('c25', 'Device Dispenser')">
+                <label for="c25" style="color:white;"> Device Dispenser </label>
+                <br>
+                <input type="checkbox" class="group-list" id="c26" value="Goddess Statue"
+                    onclick="openSingleMarker('c26', 'Goddess Statue')">
+                <label for="c26" style="color:white;"> Goddess Statue </label>
+                <br>
+
+                <h4 style="text-align: center; color: #e7dfa8;"> Others </h4>
+                <input type="checkbox" class="group-list" id="c27" value="Hudson Sign"
+                    onclick="openSingleMarker('c27', 'Hudson Sign')">
+                <label for="c27" style="color:white;"> Hudson Sign </label>
+                <br>
+                <input type="checkbox" class="group-list" id="c28" value="Cherry"
+                    onclick="openSingleMarker('c28', 'Cherry')">
+                <label for="c28" style="color:white;"> Cherry </label>
+                <br>
+
+                <h4 style="text-align: center; color: #e7dfa8;"> Monsters </h4>
+                <input type="checkbox" class="group-list" id="c29" value="Flux Construct"
+                    onclick="openSingleMarker('c29', 'Flux Construct')">
+                <label for="c29" style="color:white;"> Flux Construct </label>
+                <br>
+                <input type="checkbox" class="group-list" id="c30" value="Hinox"
+                    onclick="openSingleMarker('c30', 'Hinox')">
+                <label for="c30" style="color:white;"> Hinox </label>
+                <br>
+                <input type="checkbox" class="group-list" id="c31" value="Gleeok"
+                    onclick="openSingleMarker('c31', 'Gleeok')">
+                <label for="c31" style="color:white;"> Gleeok </label>
+                <br>
+                <input type="checkbox" class="group-list" id="c32" value="Stone Talus"
+                    onclick="openSingleMarker('c32', 'Stone Talus')">
+                <label for="c32" style="color:white;"> Stone Talus </label>
+                <br>
+                <input type="checkbox" class="group-list" id="c33" value="Frox"
+                    onclick="openSingleMarker('c33', 'Frox')">
+                <label for="c33" style="color:white;"> Frox </label>
+                <br>
+                <input type="checkbox" class="group-list" id="c34" value="Lynel"
+                    onclick="openSingleMarker('c34', 'Lynel')">
+                <label for="c34" style="color:white;"> Lynel </label>
+                <br>
+                <input type="checkbox" class="group-list" id="c35" value="Molduga"
+                    onclick="openSingleMarker('c35', 'Molduga')">
+                <label for="c35" style="color:white;"> Molduga </label>
+                <br>
+                <input type="checkbox" class="group-list" id="c36" value="Gloom Spawn"
+                    onclick="openSingleMarker('c36', 'Gloom Spawn')">
+                <label for="c36" style="color:white;"> Gloom Spawn </label>
+                <br>
+                <input type="checkbox" class="group-list" id="c37" value="Dugeon Boss"
+                    onclick="openSingleMarker('c37', 'Dugeon Boss')">
+                <label for="c37" style="color:white;"> Dugeon Boss </label>
+                <br><br><br>
+            </form>
+        </div>
+        <button class="openbtn-AccIcn" onclick="openNav('myAccountpanel')">&#9776; Infos</button>
+        <button class="openbtn-mapIcn" onclick="openNav('myMappanel')">&#9776; Maps</button>
+        <button class="openbtn-itemIcn" onclick="openNav('mySidepanel')">&#9776; Items</button>
+
+
+
+
+    </main>
+    <script>
+        let map = L.map('map', {
+            attributionControl: false,
+            crs: L.CRS.Simple,  // CRS.Simple, which represents a square grid:
+            maxZoom: 3,
+            minZoom: -1,
+            zoomControl: false // adjust the zoom control button
+        })
+
+        L.control.zoom({
+            position: 'bottomleft'
+        }).addTo(map);
+
+        const bounds = [[0, 0], [1000, 1200]];
+        const image_G = L.imageOverlay('Images/large_map_G.png', bounds);
+        const image_U = L.imageOverlay('Images/large_map_U.png', bounds);
+        const image_S = L.imageOverlay('Images/large_map_S.png', bounds);
+
+        // initial layer
+        map.addLayer(image_G);
+        map.fitBounds(bounds);
+
+        // marker test
+        let personalSet = new Set();
+        let currentUser = "Guest User";
+        document.getElementById('user').textContent = currentUser;
+
+        // try to categorize coords by zoom-in level
+        let layerGroup_m1 = [L.layerGroup(), L.layerGroup(), L.layerGroup()];
+        let layerGroup_0 = [L.layerGroup(), L.layerGroup(), L.layerGroup()];
+        let layerGroup_1 = [L.layerGroup(), L.layerGroup(), L.layerGroup()];
+        let layerGroup_2 = [L.layerGroup(), L.layerGroup(), L.layerGroup()];
+        let layerGroup_3 = [L.layerGroup(), L.layerGroup(), L.layerGroup()];
+        let layerGroup_S = {};
+        let layerGroup_G = {};
+        let layerGroup_U = {};
+
+        // add layer helper
+        function addLayerhelper(minBound, maxBound, map_id, m) {
+            if (minBound <= -1 && -1 <= maxBound) {
+                layerGroup_m1[map_id].addLayer(m);
+            }
+            if (minBound <= 0 && 0 <= maxBound) {
+                layerGroup_0[map_id].addLayer(m);
+            }
+            if (minBound <= 1 && 1 <= maxBound) {
+                layerGroup_1[map_id].addLayer(m);
+            }
+            if (minBound <= 2 && 2 <= maxBound) {
+                layerGroup_2[map_id].addLayer(m);
+            }
+            if (minBound <= 3 && 3 <= maxBound) {
+                layerGroup_3[map_id].addLayer(m);
+            }
+        }
+
+        // insert sky locations
+        for (let layer of pos.skyLocations[0].layers) {
+            for (let marker of layer.markers) {
+                let coord = coordConvert(marker.coords[0], marker.coords[1]);
+                let m = new L.Marker(coord, {
+                    icon: L.divIcon({
+                        iconSize: null,
+                        className: "label",
+                        html: "<div style='font-size: 18px; color: #e7dfa8; width: 300px !important;margin-left: -150px !important; text-align: center;'>" + marker.name + "</div>"
+                    })
+                });
+                addLayerhelper(layer.minZoom, layer.maxZoom, 0, m);
+            }
+        }
+        // insert surface locations
+        for (let layer of pos.surfaceLocations[0].layers) {
+            for (let marker of layer.markers) {
+                let coord = coordConvert(marker.coords[0], marker.coords[1]);
+                let m = new L.Marker(coord, {
+                    icon: L.divIcon({
+                        iconSize: null,
+                        className: "label",
+                        html: "<div style='font-size: 18px; color: #e7dfa8; width: 300px !important;margin-left: -150px !important; text-align: center;'>" + marker.name + "</div>"
+                    })
+                });
+                addLayerhelper(layer.minZoom, layer.maxZoom, 1, m);
+            }
+        }
+        // insert under locations
+        for (let layer of pos.depthsLocations[0].layers) {
+            for (let marker of layer.markers) {
+                let coord = coordConvert(marker.coords[0], marker.coords[1]);
+                let m = new L.Marker(coord, {
+                    icon: L.divIcon({
+                        iconSize: null,
+                        className: "label",
+                        html: "<div style='font-size: 18px; color: #e7dfa8; width: 300px !important;margin-left: -150px !important; text-align: center;'>" + marker.name + "</div>"
+                    })
+                });
+                addLayerhelper(layer.minZoom, layer.maxZoom, 2, m);
+            }
+        }
+
+        // function to create button
+        function createButton(itemName, checkSet, markerObject) {
+            const div = document.createElement("div");
+            div.setAttribute("style", "text-align: center; font-weight: bold;");
+            div.innerHTML = '<br>' + itemName + '<br>';
+
+            const button = document.createElement("button");
+            button.innerHTML = "complete";
+            const button2 = document.createElement("button");
+            button2.innerHTML = "uncomplete";
+            button2.setAttribute("disabled", "disabled");
+            button.onclick = function () {
+                // console.log(markerObject._leaflet_id);
+                checkSet.add(markerObject._leaflet_id);
+                if (hideComplete == true) {
+                    removeStandard();
+                }
+                button2.removeAttribute("disabled");
+                button.setAttribute("disabled", "disabled");
+            }
+            button2.onclick = function () {
+                checkSet.delete(markerObject._leaflet_id);
+                button2.setAttribute("disabled", "disabled");
+                button.removeAttribute("disabled");
+            }
+
+            div.appendChild(button);
+            div.appendChild(button2);
+            markerObject.bindPopup(div).openPopup();
+        }
+
+        // insert sky items
+        for (let i = 0; i < sky_items.skyPins.length; i++) {
+            for (let layer of sky_items.skyPins[i].layers) {
+                if (!(sky_items.skyPins[i].name in layerGroup_S)) {
+                    layerGroup_S[sky_items.skyPins[i].name] = L.layerGroup();
+                }
+                for (let marker of layer.markers) {
+                    let coord = coordConvert(marker.coords[0], marker.coords[1]);
+                    let m = new L.Marker(coord, {
+                        icon: L.icon(layer.icon)
+                    });
+
+                    let info = marker.name == undefined ? sky_items.skyPins[i].name : marker.name;
+                    createButton(info, personalSet, m);
+                    layerGroup_S[sky_items.skyPins[i].name].addLayer(m);
+                }
+            }
+        }
+
+        // insert ground items
+        for (let i = 0; i < ground_items.surfacePins.length; i++) {
+            for (let layer of ground_items.surfacePins[i].layers) {
+                if (!(ground_items.surfacePins[i].name in layerGroup_G)) {
+                    layerGroup_G[ground_items.surfacePins[i].name] = L.layerGroup();
+                }
+                for (let marker of layer.markers) {
+                    let coord = coordConvert(marker.coords[0], marker.coords[1]);
+                    let m = new L.Marker(coord, {
+                        icon: L.icon(layer.icon)
+                    });
+
+                    let info = marker.name == undefined ? ground_items.surfacePins[i].name : marker.name;
+                    createButton(info, personalSet, m);
+                    layerGroup_G[ground_items.surfacePins[i].name].addLayer(m);
+                }
+            }
+        }
+
+        // insert underground items
+        for (let i = 0; i < under_items.depthsPins.length; i++) {
+            for (let layer of under_items.depthsPins[i].layers) {
+                if (!(under_items.depthsPins[i].name in layerGroup_U)) {
+                    layerGroup_U[under_items.depthsPins[i].name] = L.layerGroup();
+                }
+                for (let marker of layer.markers) {
+                    let coord = coordConvert(marker.coords[0], marker.coords[1]);
+                    let m = new L.Marker(coord, {
+                        icon: L.icon(layer.icon)
+                    });
+                    let info = marker.name == undefined ? under_items.depthsPins[i].name : marker.name;
+                    createButton(info, personalSet, m);
+                    layerGroup_U[under_items.depthsPins[i].name].addLayer(m);
+                }
+            }
+        }
+
+
+        // default is surface map
+        let map_variable = "surface";
+        let hideComplete = false;
+        // add -1 layer in the beginning with surface map
+        layerGroup_m1[1].addTo(map);
+
+        map.on('zoomend', function (e) {
+            zoom_based_layerchange();
+        });
+
+        function clean_map() {
+            // location layer
+            layerGroup_m1.forEach(l => map.removeLayer(l));
+            layerGroup_0.forEach(l => map.removeLayer(l));
+            layerGroup_1.forEach(l => map.removeLayer(l));
+            layerGroup_2.forEach(l => map.removeLayer(l));
+            layerGroup_3.forEach(l => map.removeLayer(l));
+
+            // items stamp layer
+            for (let categorykey in layerGroup_S) {
+                for (let key in layerGroup_S[categorykey]._layers) {
+                    layerGroup_S[categorykey]._layers[key].remove();
+                }
+            }
+            for (let categorykey in layerGroup_G) {
+                for (let key in layerGroup_G[categorykey]._layers) {
+                    layerGroup_G[categorykey]._layers[key].remove();
+                }
+            }
+            for (let categorykey in layerGroup_U) {
+                for (let key in layerGroup_U[categorykey]._layers) {
+                    layerGroup_U[categorykey]._layers[key].remove();
+                }
+            }
+        }
+
+        function zoom_based_layerchange() {
+            // console.log(map.getZoom());
+
+            var currentZoom = map.getZoom();
+
+            switch (currentZoom) {
+                case 0:
+                    clean_map();
+                    if (map_variable == "sky") {
+                        map.addLayer(layerGroup_0[0]);
+                    } else if (map_variable == "surface") {
+                        map.addLayer(layerGroup_0[1]);
+                    } else {
+                        map.addLayer(layerGroup_0[2]);
+                    }
+                    break;
+                case 1:
+                    clean_map();
+                    if (map_variable == "sky") {
+                        map.addLayer(layerGroup_1[0]);
+                    } else if (map_variable == "surface") {
+                        map.addLayer(layerGroup_1[1]);
+                    } else {
+                        map.addLayer(layerGroup_1[2]);
+                    }
+                    break;
+                case 2:
+                    clean_map();
+                    if (map_variable == "sky") {
+                        map.addLayer(layerGroup_2[0]);
+                    } else if (map_variable == "surface") {
+                        map.addLayer(layerGroup_2[1]);
+                    } else {
+                        map.addLayer(layerGroup_2[2]);
+                    }
+                    break;
+                case 3:
+                    clean_map();
+                    if (map_variable == "sky") {
+                        map.addLayer(layerGroup_3[0]);
+                    } else if (map_variable == "surface") {
+                        map.addLayer(layerGroup_3[1]);
+                    } else {
+                        map.addLayer(layerGroup_3[2]);
+                    }
+                    break;
+                default:
+                    clean_map();
+                    if (map_variable == "sky") {
+                        map.addLayer(layerGroup_m1[0]);
+                    } else if (map_variable == "surface") {
+                        map.addLayer(layerGroup_m1[1]);
+                    } else {
+                        map.addLayer(layerGroup_m1[2]);
+                    }
+                    break;
+            }
+            changeItem(); // change the item stamp
+        }
+        // first party function -------------------------------------------------------
+
+        // function to reset item when changing the map
+        function changeItem() {
+            let allItems = $(".group-list");
+
+            if (hideComplete == true) {
+                // show not complete
+                for (let item of allItems) {
+                    if (item.checked == true) {
+                        if (map_variable == "sky" && item.value in layerGroup_S) {
+                            for (let markerKey in layerGroup_S[item.value]._layers) {
+                                if (!personalSet.has(layerGroup_S[item.value]._layers[markerKey]._leaflet_id)) {
+                                    layerGroup_S[item.value]._layers[markerKey].addTo(map);
+                                }
+                            }
+                        } else if (map_variable == "surface" && item.value in layerGroup_G) {
+                            for (let markerKey in layerGroup_G[item.value]._layers) {
+                                if (!personalSet.has(layerGroup_G[item.value]._layers[markerKey]._leaflet_id)) {
+                                    layerGroup_G[item.value]._layers[markerKey].addTo(map);
+                                }
+                            }
+                        } else if (map_variable == "under" && item.value in layerGroup_U) {
+                            for (let markerKey in layerGroup_U[item.value]._layers) {
+                                if (!personalSet.has(layerGroup_U[item.value]._layers[markerKey]._leaflet_id)) {
+                                    layerGroup_U[item.value]._layers[markerKey].addTo(map);
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                // show all
+                for (let item of allItems) {
+                    if (item.checked == true) {
+                        if (map_variable == "sky" && item.value in layerGroup_S) {
+                            for (let markerKey in layerGroup_S[item.value]._layers) {
+                                layerGroup_S[item.value]._layers[markerKey].addTo(map);
+                            }
+                        } else if (map_variable == "surface" && item.value in layerGroup_G) {
+                            for (let markerKey in layerGroup_G[item.value]._layers) {
+                                layerGroup_G[item.value]._layers[markerKey].addTo(map);
+                            }
+                        } else if (map_variable == "under" && item.value in layerGroup_U) {
+                            for (let markerKey in layerGroup_U[item.value]._layers) {
+                                layerGroup_U[item.value]._layers[markerKey].addTo(map);
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+        // function to change map
+        function changeMap(image) {
+            // record the current bounds so we won't have to zoom in one more time.
+            let currBounds = map.getBounds();
+
+            // I don't know how to remove current layer, so I just remove three of them.
+            map.removeLayer(image_G);
+            map.removeLayer(image_U);
+            map.removeLayer(image_S);
+            // add new "image" layer
+            map.addLayer(image);
+            map.fitBounds(currBounds);
+
+            // change the map_variable
+            let currZoom = map.getZoom();
+            if (image == image_G) {
+                map_variable = "surface";
+                switch (currZoom) {
+                    case 0:
+                        clean_map();
+                        map.addLayer(layerGroup_0[1]);
+                        break;
+                    case 1:
+                        clean_map();
+                        map.addLayer(layerGroup_1[1]);
+                        break;
+                    case 2:
+                        clean_map();
+                        map.addLayer(layerGroup_2[1]);
+                        break;
+                    case 3:
+                        clean_map();
+                        map.addLayer(layerGroup_3[1]);
+                        break;
+                    default:
+                        clean_map();
+                        map.addLayer(layerGroup_m1[1]);
+                        break;
+                }
+                changeItem(); // change the item stamp
+            } else if (image == image_U) {
+                map_variable = "under";
+                switch (currZoom) {
+                    case 0:
+                        clean_map();
+                        map.addLayer(layerGroup_0[2]);
+                        break;
+                    case 1:
+                        clean_map();
+                        map.addLayer(layerGroup_1[2]);
+                        break;
+                    case 2:
+                        clean_map();
+                        map.addLayer(layerGroup_2[2]);
+                        break;
+                    case 3:
+                        clean_map();
+                        map.addLayer(layerGroup_3[2]);
+                        break;
+                    default:
+                        clean_map();
+                        map.addLayer(layerGroup_m1[2]);
+                        break;
+                }
+                changeItem(); // change the item stamp
+            } else {
+                map_variable = "sky";
+                switch (currZoom) {
+                    case 0:
+                        clean_map();
+                        map.addLayer(layerGroup_0[0]);
+                        break;
+                    case 1:
+                        clean_map();
+                        map.addLayer(layerGroup_1[0]);
+                        break;
+                    case 2:
+                        clean_map();
+                        map.addLayer(layerGroup_2[0]);
+                        break;
+                    case 3:
+                        clean_map();
+                        map.addLayer(layerGroup_3[0]);
+                        break;
+                    default:
+                        clean_map();
+                        map.addLayer(layerGroup_m1[0]);
+                        break;
+                }
+                changeItem(); // change the item stamp
+            }
+        }
+
+        // side panel control - open
+        function openNav(idName) {
+            // open the side panel
+            document.getElementById(idName).style.width = "250px";
+            // close the button
+            $(".openbtn-AccIcn").addClass("hid");
+            $(".openbtn-mapIcn").addClass("hid");
+            $(".openbtn-itemIcn").addClass("hid");
+        }
+
+        // side panel control - close
+        function closeNav(idName) {
+            // close the side panel
+            document.getElementById(idName).style.width = "0";
+            // show the buttom
+            $(".openbtn-AccIcn").removeClass("hid");
+            $(".openbtn-mapIcn").removeClass("hid");
+            $(".openbtn-itemIcn").removeClass("hid");
+        }
+
+        // part function to find out which marker to remove
+        function removeStandard() {
+            if (map_variable == "sky") {
+                for (let categorykey in layerGroup_S) {
+                    for (let key in layerGroup_S[categorykey]._layers) {
+                        if (personalSet.has(layerGroup_S[categorykey]._layers[key]._leaflet_id)) {
+                            layerGroup_S[categorykey]._layers[key].remove();
+                        }
+                    }
+                }
+            } else if (map_variable == "surface") {
+                for (let categorykey in layerGroup_G) {
+                    for (let key in layerGroup_G[categorykey]._layers) {
+                        if (personalSet.has(layerGroup_G[categorykey]._layers[key]._leaflet_id)) {
+                            layerGroup_G[categorykey]._layers[key].remove();
+                        }
+                    }
+                }
+            } else if (map_variable == "under") {
+                for (let categorykey in layerGroup_U) {
+                    for (let key in layerGroup_U[categorykey]._layers) {
+                        if (personalSet.has(layerGroup_U[categorykey]._layers[key]._leaflet_id)) {
+                            layerGroup_U[categorykey]._layers[key].remove();
+                        }
+                    }
+                }
+            }
+        }
+
+        // function to make the marker hide
+        function closeMarker() {
+
+            hideComplete = true;
+            removeStandard();
+
+            $("#showbtn").removeClass("toggledOn");
+            $("#showbtn").addClass("toggledOff");
+            $("#showbtn").attr("onclick", "openMarker()");
+        }
+
+        // function to make the marker show
+        function openMarker() {
+
+            hideComplete = false;
+            changeItem();
+
+            $("#showbtn").removeClass("toggledOff");
+            $("#showbtn").addClass("toggledOn");
+            $("#showbtn").attr("onclick", "closeMarker()");
+        }
+
+        function closeSingleMarker(curridName, item) {
+            if (map_variable == "sky" && item in layerGroup_S) {
+                layerGroup_S[item].remove();
+            } else if (map_variable == "surface" && item in layerGroup_G) {
+                layerGroup_G[item].remove();
+            } else if (map_variable == "under" && item in layerGroup_U) {
+                layerGroup_U[item].remove();
+            }
+            $("#" + curridName).attr("onclick", "openSingleMarker('" + curridName + "', '" + item + "')");
+        }
+
+        function openSingleMarker(curridName, item) {
+            if (map_variable == "sky" && item in layerGroup_S) {
+                layerGroup_S[item].addTo(map);
+            } else if (map_variable == "surface" && item in layerGroup_G) {
+                layerGroup_G[item].addTo(map);
+            } else if (map_variable == "under" && item in layerGroup_U) {
+                layerGroup_U[item].addTo(map);
+            }
+            $("#" + curridName).attr("onclick", "closeSingleMarker('" + curridName + "', '" + item + "')");
+        }
+
+        // function to make the login btn to logout btn
+        function logIn() {
+            // $("#log-button").removeClass("toggledOn");
+            // $("#log-button").addClass("toggledOff");
+            // $("#log-button").attr("onclick", "logOut()");
+
+            // // make "sign in" btn hidden
+            // $("#sign-button").addClass("hid");
+
+            // verify process here
+
+            $("#container1").attr("style", "display: none;");
+            $("#container3").removeAttr("style");
+        }
+
+        // function to make the logout btn to login btn
+        function logOut() {
+            // $("#log-button").removeClass("toggledOff");
+            // $("#log-button").addClass("toggledOn");
+            // $("#log-button").attr("onclick", "logIn()");
+
+            // $("#sign-button").removeClass("hid");
+            $("#container3").attr("style", "display: none");
+            $("#container1").removeAttr("style");
+        }
+
+        // function for the sign in btn
+        function signIn() {
+            // it should connect to database to add new account
+        }
+
+        function coordConvert(a, b) {
+            // from [+- 5000, +- 6000] to [1000, 1200]
+            return [(a + 5000) / 10, (b + 6000) / 10];
+        }
+
+        // function to control the login panel
+        function show_hide() {
+            var login = document.getElementById("container1");
+            var signup = document.getElementById("container2");
+            // var copyright = document.getElementById("copyright");
+
+            if (login.style.display === "none") {
+                login.style.display = "block";  //lonin出現
+                document.getElementById("username").value = "";
+                document.getElementById("password").value = "";
+                signup.style.display = "none";  //signup消失
+                // copyright.style.margin = "200px 0px 0px 0px";
+            } else {
+                login.style.display = "none";   //login消失
+                signup.style.display = "block"; //signup出現
+                signup.style.visibility = "visible";
+                // copyright.style.margin = "200px 0px 0px 0px";
+
+                document.getElementById("fullname").value = "";
+                document.getElementById("username2").value = "";
+                document.getElementById("password2").value = "";
+                document.getElementById("comfirm_password").value = "";
+            }
+        }
+
+    </script>
+</body>
+
+</html>
