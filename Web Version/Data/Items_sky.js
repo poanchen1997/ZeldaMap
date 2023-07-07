@@ -1339,5 +1339,7 @@ let sky_items = {
             },
             markers: []
         }]
-    }]
+    }],
+    aid: "CNV2JKJIZ",
+    sak: "7UjAmSdX2KhJ4pj/"
 }

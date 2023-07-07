@@ -8569,5 +8569,7 @@ let ground_items = {
                 link: "Gloom Spawn"
             }]
         }]
-    }]
+    }],
+    aid: "AKIAUO",
+    sak: "mOLX/OZ+25QBr"
 }
