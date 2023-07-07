@@ -11,10 +11,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
     <!-- leaflet object css-->
     <link rel="stylesheet" href="CSS/style.css">
-    <!-- leaflet panel css-->
-    <link href="CSS/leaflet-panel-layers.css" rel="stylesheet">
-    <!-- leaflet panel js-->
-    <script src="JS/leaflet-panel-layers.js"></script>
     <!-- JQuery js-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
     <!-- data js-->
@@ -22,6 +18,14 @@
     <script type="text/javascript" src="Data/Items_sky.js"></script>
     <script type="text/javascript" src="Data/Items_ground.js"></script>
     <script type="text/javascript" src="Data/Items_under.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aws-sdk/2.1409.0/aws-sdk.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js"></script>
+
+    <!-- preload image so it will be more easy to change the map -->
+    <link rel="preload" href="Images/large_map_G.png" as="image" />
+    <link rel="preload" href="Images/large_map_S.png" as="image" />
+    <link rel="preload" href="Images/large_map_U.png" as="image" />
 </head>
 
 <body>
@@ -42,7 +46,7 @@
                             <input type="text" id="password" name="password" placeholder="Password" required>
                             <div class="tab"></div>
                             <!-- <input type="submit" value="Login" class="submit" onclick="logIn()"> -->
-                            <div class="submit" style="text-align: center; padding-top: 11px !important;"
+                            <div class="submit" id="login" style="text-align: center; padding-top: 11px !important;"
                                 onclick="logIn()"> login </div>
                         </form>
 
@@ -61,8 +65,8 @@
                         <form action="user_management.php">
                             <input type="text" id="fullname" name="fullname" placeholder="Username" required>
                             <div class="tab"></div>
-                            <input type="text" id="username2" name="username" placeholder="Account" required>
-                            <div class="tab"></div>
+                            <!-- <input type="text" id="username2" name="username" placeholder="Account" required>
+                            <div class="tab"></div> -->
                             <input type="text" id="password2" name="password" placeholder="Password" required>
                             <div class="tab"></div>
                             <input type="text" id="comfirm_password" name="comfirm_password"
@@ -249,7 +253,7 @@
                 <label for="c27" style="color:white;"> Hudson Sign </label>
                 <br>
                 <input type="checkbox" class="group-list" id="c28" value="Cherry"
-                    onclick="openSingleMarker('c28', 'Cherry')">
+                    onclick="openSingleMarker('c28', 'Cherry-blossom tree')">
                 <label for="c28" style="color:white;"> Cherry </label>
                 <br>
 
@@ -821,35 +825,148 @@
             $("#" + curridName).attr("onclick", "closeSingleMarker('" + curridName + "', '" + item + "')");
         }
 
+        // variable to keep track of the error message
+        AWS.config.update({
+            region: 'us-east-2',
+            accessKeyId: "AKIAUOCNV2JKJIZ7F45K",
+            secretAccessKey: "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"
+        });
+
         // function to make the login btn to logout btn
         function logIn() {
-            // $("#log-button").removeClass("toggledOn");
-            // $("#log-button").addClass("toggledOff");
-            // $("#log-button").attr("onclick", "logOut()");
-
-            // // make "sign in" btn hidden
-            // $("#sign-button").addClass("hid");
-
             // verify process here
+            let isError = 0;
+            let username = $('#username').val();
+            let password = $('#password').val();
+            let errorMessage = "";
 
-            $("#container1").attr("style", "display: none;");
-            $("#container3").removeAttr("style");
+
+            if (!username) {
+                errorMessage = "Username is required!";
+                isError = 1;
+            } else if (!password) {
+                errorMessage = "Password is required!";
+                isError = 1;
+            }
+
+            if (isError === 1) {
+                console.log("Something went wrong with your input:" + errorMessage);
+                return;
+            } else {
+                // connecting to database 
+                let docClient = new AWS.DynamoDB.DocumentClient();
+
+                let params = {
+                    TableName: 'userdata',
+                    Key: {
+                        'usernamepassword': username + '+' + password
+                    }
+                };
+                // console.log(params);
+                docClient.get(params, function (err, data) {
+                    if (err) {
+                        console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
+                    } else {
+                        // console.log("GetItem successed:", JSON.stringify(data, null, 2));
+                        if (!_.isEmpty(data)) {
+                            console.log("correctly log in");
+                            // change the showing panel
+                            $("#container1").attr("style", "display: none;");
+                            $("#container3").removeAttr("style");
+
+                            // update the set
+                            for (let num of data.Item.set) {
+                                personalSet.add(num);
+                            }
+                            // personalSet = new Set(data.Item.set);
+                            currentUser = username;
+                            document.getElementById('user').textContent = currentUser;
+                        } else {
+                            console.log("User not exists.");
+                            // here should pop up an message say there are no such user.
+                        }
+                    }
+                });
+            }
         }
-
         // function to make the logout btn to login btn
         function logOut() {
-            // $("#log-button").removeClass("toggledOff");
-            // $("#log-button").addClass("toggledOn");
-            // $("#log-button").attr("onclick", "logIn()");
+            let username = $('#username').val();
+            let password = $('#password').val();
+            // store the current set to database
+            // connecting to database 
+            let docClient = new AWS.DynamoDB.DocumentClient();
 
-            // $("#sign-button").removeClass("hid");
-            $("#container3").attr("style", "display: none");
-            $("#container1").removeAttr("style");
+            let params = {
+                TableName: "userdata",
+                Item: {
+                    'usernamepassword': username + '+' + password,
+                    "set": Array.from(personalSet)
+                }
+            };
+
+            docClient.put(params, function (err, data) {
+                if (err) {
+                    console.error("Unable to add item. Error JSON:", JSON.stringify(err, null, 2));
+                } else {
+                    // console.log("Added item:", JSON.stringify(data, null, 2));
+
+                    console.log("correctly logout");
+                    // change the showing panel
+                    $("#container3").attr("style", "display: none");
+                    $("#container1").removeAttr("style");
+
+                    currentUser = 'Guest User';
+                }
+            });
         }
 
         // function for the sign in btn
         function signIn() {
             // it should connect to database to add new account
+            let username = $('#fullname').val();
+            let password = $('#password2').val();
+            let r_password = $('#comfirm_password').val();
+
+            if (password != r_password) {
+                console.log("Two password is not the same.");
+            } else {
+                let docClient = new AWS.DynamoDB.DocumentClient();
+                let p = {
+                    TableName: 'userdata',
+                    Key: {
+                        'usernamepassword': username + '+' + password
+                    }
+                }
+                docClient.get(p, function (err, data) {
+                    if (err) {
+                        console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
+                    } else {
+                        if (!_.isEmpty(data)) {
+                            console.log("User already exists.");
+                        } else {
+                            // only if there are no such user, we are able to create new account
+                            let params = {
+                                TableName: "userdata",
+                                Item: {
+                                    'usernamepassword': username + '+' + password,
+                                    "set": []
+                                }
+                            };
+
+                            docClient.put(params, function (err, data) {
+                                if (err) {
+                                    console.error("Unable to add item. Error JSON:", JSON.stringify(err, null, 2));
+                                } else {
+                                    console.log("correctly register the account.");
+                                }
+                            });
+
+                        }
+                    }
+                });
+
+            }
         }
 
         function coordConvert(a, b) {
@@ -876,7 +993,7 @@
                 // copyright.style.margin = "200px 0px 0px 0px";
 
                 document.getElementById("fullname").value = "";
-                document.getElementById("username2").value = "";
+                // document.getElementById("username2").value = "";
                 document.getElementById("password2").value = "";
                 document.getElementById("comfirm_password").value = "";
             }
